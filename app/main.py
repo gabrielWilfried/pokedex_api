@@ -21,7 +21,12 @@ app.add_middleware(
 
 app.include_router(pokemon.router, prefix="/api/pokemon", tags=["Pokemon"])
 
-@app.get("/")
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {"status": "ok"}
+
+
+@app.get("/", tags=["Root"])
 async def root():
     return {"message": "Welcome to PokePipeline API. Visit /docs for API documentation."}
 
@@ -32,6 +37,6 @@ def startup_event():
 
 @app.exception_handler(StarletteHTTPException)
 async def redirect_404_to_docs(request, exc):
-    if exc.status_code == 404:
+    if exc.status_code == 404 and request.url.path == "/":
         return RedirectResponse(url="/docs")
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
